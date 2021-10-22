@@ -20,38 +20,43 @@
         header= "Quiz"  
         header-bg-variant="success"
         align="center">
-        <h2 class="h6 bg-secondary text-light">Questao {{b}}/{{questions.length}}</h2>
+        <h2 class="h6 bg-success text-light">Questao {{b}}/{{questions.length}}</h2>
     <div>
-    <b-card no-body class="text-center">
-      <div class="bg-secondary text-light" v-for="item in questions.slice(a,b)" v-bind:key="item.title">
+    <b-card  class="text-center"  v-show="quiz">
+      <div class="card text-dark bg-light text-sm-start fs-6 mb-3" v-for="item in questions.slice(a,b)" v-bind:key="item.title">
       <b-form-group 
-      class="questions" 
-      v-slot="{ ariaDescribedby }"  
-      name="radio-options-slots" >
+        class="questions" 
+        v-slot="{ ariaDescribedby }"  
+        name="radio-options-slots" >
         <label class='questions'>{{item.title}}</label>
           <b-form-radio 
-          class="answers mt-3 " 
-          id="radio-slots"
-          v-model="item.selectedAnswer"
-          :aria-describedby="ariaDescribedby"
-          v-for="answer in item.answers" :key="answer.answer"
-          v-bind:value="answer.value" >
-          {{answer.answer}}
+            class="answers mt-3" 
+            id="radio-slots"
+            v-model="item.selectedAnswer"
+            :aria-describedby="ariaDescribedby"
+            v-for="answer in item.answers" :key="answer.answer"
+            v-bind:value="answer.value" >
+            <p >{{answer.answer}}</p>
           </b-form-radio>
       </b-form-group>
-      <div class="mt-3">Selected: <strong> {{showAnswer(item.selectedAnswer)}}</strong></div>
-      </div>
+      </div >
     </b-card>
+      <div  class="mt-3 questions card" v-if="score_show">
+        <div class='text-warning card-title' v-if="total >= 36 &&total <= 52"><strong>'Perfil de Risco Conservador'</strong></div> 
+        <div class='text-warning card-title' v-if="total >= 53 && total <= 65"><strong>'Perfil de Risco Moderado'</strong></div> 
+        <div class='text-warning card-title' v-if="total >= 66 && total <= 71"><strong>'Perfil de Risco Dinâmico'</strong></div> 
+        <div class='text-danger card-title' v-if="total >= 72 && total <= 83"><strong>'Perfil de Risco Arrojado'</strong></div> 
+        <div class='text-danger card-title' v-if="total >= 84 && total <= 104"><strong>'Perfil de Risco Agressivo'</strong></div>
+        <div class='text-info card-title'><strong>Pontos : {{total}}</strong></div>
+        <b-button class="mt-3 btn-lg" variant="success" @click="restartQuiz">Restart</b-button> 
+      </div>
     </div>
     </b-card>
     </b-card-group>
-    <b-button class="mt-3" variant="success" @click="nextQuestion">Next</b-button>
-    <div class="mt-3">Total points: <strong> {{total}}</strong></div>
-    <div v-if="total >= 36 &&total <= 52"><strong>'Perfil de Risco Conservador'</strong></div> 
-    <div v-if="total >= 53 && total <= 65"><strong>'Perfil de Risco Moderado'</strong></div> 
-    <div v-if="total >= 66 && total <= 71"><strong>'Perfil de Risco Dinâmico'</strong></div> 
-    <div v-if="total >= 72 && total <= 83"><strong>'Perfil de Risco Arrojado'</strong></div> 
-    <div v-if="total >= 84 && total <= 104"><strong>'Perfil de Risco Agressivo'</strong></div> 
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <b-button class="mt-3 btn-lg" variant="success" @click="skipQuestion">Skip</b-button>
+      <b-button class="mt-3 btn-lg"  variant="success" @click="nextQuestion">Next</b-button>
+    </div>
     </div>
   </div>
 </template>
@@ -66,7 +71,6 @@ export default {
   data() {
       return {
         index: 0,
-        count:10,
         questions: [
           {id: 1, title:'Qual a principal finalidade de investir seu patrimônio conosco?',
             answers:[
@@ -157,7 +161,7 @@ export default {
           },
           {
             id:10,
-            title:': Como você classificaria a relação de sua formação acadêmica e da sua experiência profissional em relação aosseus conhecimentos sobre o mercado financeiro?',
+            title:'Como você classificaria a relação de sua formação acadêmica e da sua experiência profissional em relação aosseus conhecimentos sobre o mercado financeiro?',
             answers:[
               {id: 1, answer:'Não tenho formação acadêmica na área financeira, mas desejo operar no mercado de capitais e financeiro.', value:2},
               {id: 2, answer:'Apesar de não ter a formação acadêmica na área financeira possuo experiência no mercado de capitais e financeiro.',value:4},
@@ -177,10 +181,11 @@ export default {
             ], selectedAnswer: '',
           },
         ],
-        selected:[],
         a:0,
-        b:1
-        
+        b:1,
+        quiz: true,
+        score_show:false,
+        next:false
       }
     },
   computed: {
@@ -192,18 +197,33 @@ export default {
   },
 
   methods: {
-     randomIndex: function () {
-      return Math.floor(Math.random() * this.questions.length)
+    nextQuestion() {
+      if(this.questions.length -1 == this.a){
+        this.score_show = true;
+        this.quiz = false;
+      } else {
+        this.a++;
+        this.b++;
+      }
     },
-    nextQuestion:  function () {
-           this.a++;
-           this.b++;
-           this.selectedAnswer = false;
-        },
+
+    skipQuestion() {
+      if(this.questions.length -1 == this.a){
+        this.score_show = true;
+        this.quiz = false;
+      }else {
+        this.a--;
+        this.b--;
+      }
+    },
+
+    restartQuiz(){
+      Object.assign(this.$data,this.$options.data())
+    },
 
     showAnswer(selectedAnswer) {
       if(selectedAnswer) {
-      return 'Selected: ' + selectedAnswer + ', points: ' + selectedAnswer
+      return 'Selected: ' + selectedAnswer + ', points: ' + selectedAnswer;
       }
       return '';
     }

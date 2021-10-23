@@ -1,5 +1,10 @@
 # simple-quiz
 
+## Ambiente
+  * Vue Cli 
+  * bootstrap
+  * @popperjs/core
+
 ## Project setup
 ```
 npm install
